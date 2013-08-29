@@ -46,6 +46,8 @@ static SIAlertView *__si_alert_current_view;
 
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UITextView *messageLabel;
+@property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
+@property (nonatomic, getter = isActivityIndicatorVisible) BOOL activityIndicatorVisible;
 @property (nonatomic, strong) UIView *containerView;
 @property (nonatomic, strong) NSMutableArray *buttons;
 
@@ -210,6 +212,7 @@ static SIAlertView *__si_alert_current_view;
     appearance.buttonColor = [UIColor colorWithWhite:0.4 alpha:1];
     appearance.cancelButtonColor = [UIColor colorWithWhite:0.3 alpha:1];
     appearance.destructiveButtonColor = [UIColor whiteColor];
+    appearance.activityIndicatorTintColor = [UIColor darkGrayColor];
     appearance.cornerRadius = 2;
     appearance.shadowRadius = 8;
 }
@@ -223,12 +226,27 @@ static SIAlertView *__si_alert_current_view;
 {
 	self = [super init];
 	if (self) {
+        _activityIndicatorVisible = NO;
 		_title = title;
         _message = message;
 		self.items = [[NSMutableArray alloc] init];
 	}
 	return self;
 }
+
+
+- (id)initWithActivityIndicatorAndTitle:(NSString *)title
+{
+    self = [super init];
+	if (self)
+    {
+        _activityIndicatorVisible = YES;
+		_title = title;
+		self.items = [[NSMutableArray alloc] init];
+	}
+	return self;
+}
+
 
 #pragma mark - Class methods
 
@@ -347,7 +365,7 @@ static SIAlertView *__si_alert_current_view;
     
     [SIAlertView setAnimating:YES];
     [SIAlertView setCurrentAlertView:self];
-    
+
     // transition background
     [SIAlertView showBackground];
     
@@ -365,6 +383,11 @@ static SIAlertView *__si_alert_current_view;
     [self.alertWindow makeKeyAndVisible];
     
     [self validateLayout];
+
+    if (self.isActivityIndicatorVisible)
+    {
+        [self.activityIndicator startAnimating];
+    }
     
     [self transitionInCompletion:^{
         if (self.didShowHandler) {
@@ -401,6 +424,11 @@ static SIAlertView *__si_alert_current_view;
         self.visible = NO;
         
         [self teardown];
+
+        if (self.isActivityIndicatorVisible)
+        {
+            [self.activityIndicator stopAnimating];
+        }
         
         [SIAlertView setCurrentAlertView:nil];
         
@@ -673,7 +701,7 @@ static SIAlertView *__si_alert_current_view;
         self.titleLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT, height);
         y += height;
 	}
-    if (self.messageLabel) {
+    if (self.messageLabel && !self.isActivityIndicatorVisible) {
         if (y > CONTENT_PADDING_TOP) {
             y += GAP;
         }
@@ -682,6 +710,17 @@ static SIAlertView *__si_alert_current_view;
         self.messageLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT, height);
         y += height;
     }
+    if (self.activityIndicator && self.isActivityIndicatorVisible)
+    {
+        if (y > CONTENT_PADDING_TOP) {
+            y += GAP;
+        }
+
+        CGSize size = self.activityIndicator.frame.size;
+        self.activityIndicator.frame = CGRectMake((self.containerView.bounds.size.width - size.width) * .5f, y, size.width, size.height);
+        y += size.height;
+    }
+    
     if (self.items.count > 0) {
         if (y > CONTENT_PADDING_TOP) {
             y += GAP;
@@ -715,11 +754,17 @@ static SIAlertView *__si_alert_current_view;
 	if (self.title) {
 		height += [self heightForTitleLabel];
 	}
-    if (self.message) {
+    if (self.message && !self.isActivityIndicatorVisible) {
         if (height > CONTENT_PADDING_TOP) {
             height += GAP;
         }
         height += [self heightForMessageLabel];
+    }
+    if (self.activityIndicator && self.isActivityIndicatorVisible) {
+        if (height > CONTENT_PADDING_TOP) {
+            height += GAP;
+        }
+        height += self.activityIndicator.bounds.size.height;
     }
     if (self.items.count > 0) {
         if (height > CONTENT_PADDING_TOP) {
@@ -775,6 +820,7 @@ static SIAlertView *__si_alert_current_view;
     [self setupContainerView];
     [self updateTitleLabel];
     [self updateMessageLabel];
+    [self updateActivityIndicator];
     [self setupButtons];
     [self invalidateLayout];
 }
@@ -832,7 +878,7 @@ static SIAlertView *__si_alert_current_view;
 
 - (void)updateMessageLabel
 {
-    if (self.message) {
+    if (self.message && !self.isActivityIndicatorVisible) {
         if (!self.messageLabel) {
             self.messageLabel = [[UITextView alloc] initWithFrame:self.bounds];
             self.messageLabel.textAlignment = NSTextAlignmentCenter;
@@ -851,6 +897,25 @@ static SIAlertView *__si_alert_current_view;
     } else {
         [self.messageLabel removeFromSuperview];
         self.messageLabel = nil;
+    }
+    [self invalidateLayout];
+}
+
+- (void)updateActivityIndicator
+{
+    if (self.isActivityIndicatorVisible)
+    {
+        if (!self.activityIndicator)
+        {
+            self.activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            self.activityIndicator.color = self.activityIndicatorTintColor;
+            [self.containerView addSubview:self.activityIndicator];
+        }
+    }
+    else
+    {
+        [self.activityIndicator removeFromSuperview];
+        self.activityIndicator = nil;
     }
     [self invalidateLayout];
 }
@@ -978,6 +1043,17 @@ static SIAlertView *__si_alert_current_view;
     _messageColor = messageColor;
     self.messageLabel.textColor = messageColor;
 }
+
+
+- (void)setActivityIndicatorTintColor:(UIColor *)tintColor
+{
+    if (_activityIndicatorTintColor == tintColor) {
+        return;
+    }
+    _activityIndicatorTintColor = tintColor;
+    self.activityIndicator.color = tintColor;
+}
+
 
 - (void)setButtonFont:(UIFont *)buttonFont
 {

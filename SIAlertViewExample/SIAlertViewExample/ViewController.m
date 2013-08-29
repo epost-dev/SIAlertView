@@ -30,6 +30,7 @@
     [[SIAlertView appearance] setButtonColor:[UIColor greenColor]];
     [[SIAlertView appearance] setCancelButtonColor:[UIColor redColor]];
     [[SIAlertView appearance] setDestructiveButtonColor:[UIColor blueColor]];
+    [[SIAlertView appearance] setActivityIndicatorTintColor:[UIColor blueColor]];
 
     [[SIAlertView appearance] setDefaultButtonImage:[[UIImage imageNamed:@"button-default"] resizableImageWithCapInsets:UIEdgeInsetsMake(15,5,14,6)] forState:UIControlStateNormal];
     [[SIAlertView appearance] setDefaultButtonImage:[[UIImage imageNamed:@"button-default-d"] resizableImageWithCapInsets:UIEdgeInsetsMake(15,5,14,6)] forState:UIControlStateHighlighted];
@@ -44,23 +45,14 @@
 
 - (IBAction)alert1:(id)sender
 {
-    SIAlertView *alertView = [[SIAlertView alloc] initWithTitle:@"Title1" andMessage:@"Count down"];
-    [alertView addButtonWithTitle:@"Button1"
-                             type:SIAlertViewButtonTypeDefault
-                          handler:^(SIAlertView *alertView) {
-                              NSLog(@"Button1 Clicked");
-                          }];
-    [alertView addButtonWithTitle:@"Button2"
-                             type:SIAlertViewButtonTypeCancel
-                          handler:^(SIAlertView *alertView) {
-                              NSLog(@"Button2 Clicked");
-                          }];
-    [alertView addButtonWithTitle:@"Button3"
+    SIAlertView *alertView = [[SIAlertView alloc] initWithActivityIndicatorAndTitle:@"Upload..."];
+
+    [alertView addButtonWithTitle:@"Cancel"
                              type:SIAlertViewButtonTypeDestructive
                           handler:^(SIAlertView *alertView) {
-                              NSLog(@"Button3 Clicked");
+                              NSLog(@"Cancel Clicked");
                           }];
-    
+
     alertView.willShowHandler = ^(SIAlertView *alertView) {
         NSLog(@"%@, willShowHandler", alertView);
     };
@@ -74,33 +66,18 @@
         NSLog(@"%@, didDismissHandler", alertView);
     };
     
-//    alertView.cornerRadius = 4;
-//    alertView.buttonFont = [UIFont boldSystemFontOfSize:12];
     [alertView show];
-    
-    alertView.title = @"3";
-//    double delayInSeconds = 1.0;
-//    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-//    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-//        alertView.title = @"2";
-//        alertView.titleColor = [UIColor yellowColor];
-//        alertView.titleFont = [UIFont boldSystemFontOfSize:30];
-//    });
-//    delayInSeconds = 2.0;
-//    popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-//    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-//        alertView.title = @"1";
-//        alertView.titleColor = [UIColor greenColor];
-//        alertView.titleFont = [UIFont boldSystemFontOfSize:40];
-//    });
-//    delayInSeconds = 3.0;
-//    popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
-//    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-//        NSLog(@"1=====");
-//        [alertView dismissAnimated:YES];
-//        NSLog(@"2=====");
-//    });
 
+    double delayInSeconds = 5.0;
+    dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+        alertView.title = @"Upload ready!";
+        double delayInSeconds = 0.3;
+        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
+        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+            [alertView dismissAnimated:YES];
+        });
+    });
 }
 
 - (IBAction)alert2:(id)sender
