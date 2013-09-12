@@ -115,7 +115,7 @@ static SIAlertView *__si_alert_current_view;
             CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
             CGGradientRef gradient = CGGradientCreateWithColorComponents(colorSpace, colors, locations, locationsCount);
             CGColorSpaceRelease(colorSpace);
-            
+
             CGPoint center = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height / 2);
             CGFloat radius = MIN(self.bounds.size.width, self.bounds.size.height) ;
             CGContextDrawRadialGradient (context, gradient, center, 0, center, radius, kCGGradientDrawsAfterEndLocation);
@@ -201,7 +201,7 @@ static SIAlertView *__si_alert_current_view;
 {
     if (self != [SIAlertView class])
         return;
-    
+
     SIAlertView *appearance = [self appearance];
     appearance.viewBackgroundColor = [UIColor whiteColor];
     appearance.titleColor = [UIColor blackColor];
@@ -341,37 +341,37 @@ static SIAlertView *__si_alert_current_view;
     if (![[SIAlertView sharedQueue] containsObject:self]) {
         [[SIAlertView sharedQueue] addObject:self];
     }
-    
+
     if ([SIAlertView isAnimating]) {
         return; // wait for next turn
     }
-    
+
     if (self.isVisible) {
         return;
     }
-    
+
     if ([SIAlertView currentAlertView].isVisible) {
         SIAlertView *alert = [SIAlertView currentAlertView];
         [alert dismissAnimated:YES cleanup:NO];
         return;
     }
-    
+
     if (self.willShowHandler) {
         self.willShowHandler(self);
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:SIAlertViewWillShowNotification object:self userInfo:nil];
-    
+
     self.visible = YES;
-    
+
     [SIAlertView setAnimating:YES];
     [SIAlertView setCurrentAlertView:self];
 
     // transition background
     [SIAlertView showBackground];
-    
+
     SIAlertViewController *viewController = [[SIAlertViewController alloc] initWithNibName:nil bundle:nil];
     viewController.alertView = self;
-    
+
     if (!self.alertWindow) {
         UIWindow *window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         window.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -381,22 +381,22 @@ static SIAlertView *__si_alert_current_view;
         self.alertWindow = window;
     }
     [self.alertWindow makeKeyAndVisible];
-    
+
     [self validateLayout];
 
     if (self.isActivityIndicatorVisible)
     {
         [self.activityIndicator startAnimating];
     }
-    
+
     [self transitionInCompletion:^{
         if (self.didShowHandler) {
             self.didShowHandler(self);
         }
         [[NSNotificationCenter defaultCenter] postNotificationName:SIAlertViewDidShowNotification object:self userInfo:nil];
-        
+
         [SIAlertView setAnimating:NO];
-        
+
         NSInteger index = [[SIAlertView sharedQueue] indexOfObject:self];
         if (index < [SIAlertView sharedQueue].count - 1) {
             [self dismissAnimated:YES cleanup:NO]; // dismiss to show next alert view
@@ -412,50 +412,50 @@ static SIAlertView *__si_alert_current_view;
 - (void)dismissAnimated:(BOOL)animated cleanup:(BOOL)cleanup
 {
     BOOL isVisible = self.isVisible;
-    
+
     if (isVisible) {
         if (self.willDismissHandler) {
             self.willDismissHandler(self);
         }
         [[NSNotificationCenter defaultCenter] postNotificationName:SIAlertViewWillDismissNotification object:self userInfo:nil];
     }
-    
+
     void (^dismissComplete)(void) = ^{
         self.visible = NO;
-        
+
         [self teardown];
 
         if (self.isActivityIndicatorVisible)
         {
             [self.activityIndicator stopAnimating];
         }
-        
+
         [SIAlertView setCurrentAlertView:nil];
-        
+
         SIAlertView *nextAlertView;
         NSInteger index = [[SIAlertView sharedQueue] indexOfObject:self];
         if (index != NSNotFound && index < [SIAlertView sharedQueue].count - 1) {
             nextAlertView = [SIAlertView sharedQueue][index + 1];
         }
-        
+
         if (cleanup) {
             [[SIAlertView sharedQueue] removeObject:self];
         }
-        
+
         [SIAlertView setAnimating:NO];
-        
+
         if (isVisible) {
             if (self.didDismissHandler) {
                 self.didDismissHandler(self);
             }
             [[NSNotificationCenter defaultCenter] postNotificationName:SIAlertViewDidDismissNotification object:self userInfo:nil];
         }
-        
+
         // check if we should show next alert
         if (!isVisible) {
             return;
         }
-        
+
         if (nextAlertView) {
             [nextAlertView show];
         } else {
@@ -466,23 +466,23 @@ static SIAlertView *__si_alert_current_view;
             }
         }
     };
-    
+
     if (animated && isVisible) {
         [SIAlertView setAnimating:YES];
         [self transitionOutCompletion:dismissComplete];
-        
+
         if ([SIAlertView sharedQueue].count == 1) {
             [SIAlertView hideBackgroundAnimated:YES];
         }
-        
+
     } else {
         dismissComplete();
-        
+
         if ([SIAlertView sharedQueue].count == 0) {
             [SIAlertView hideBackgroundAnimated:YES];
         }
     }
-    
+
     [self.oldKeyWindow makeKeyWindow];
     self.oldKeyWindow.hidden = NO;
 }
@@ -630,7 +630,7 @@ static SIAlertView *__si_alert_current_view;
             animation.delegate = self;
             [animation setValue:completion forKey:@"handler"];
             [self.containerView.layer addAnimation:animation forKey:@"bounce"];
-            
+
             self.containerView.transform = CGAffineTransformMakeScale(0.01, 0.01);
         }
             break;
@@ -686,14 +686,14 @@ static SIAlertView *__si_alert_current_view;
 #if DEBUG_LAYOUT
     NSLog(@"%@, %@", self, NSStringFromSelector(_cmd));
 #endif
-    
+
     CGFloat height = [self preferredHeight];
     CGFloat left = (self.bounds.size.width - CONTAINER_WIDTH) * 0.5;
     CGFloat top = (self.bounds.size.height - height) * 0.5;
     self.containerView.transform = CGAffineTransformIdentity;
     self.containerView.frame = CGRectMake(left, top, CONTAINER_WIDTH, height);
     self.containerView.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:self.containerView.bounds cornerRadius:self.containerView.layer.cornerRadius].CGPath;
-    
+
     CGFloat y = CONTENT_PADDING_TOP;
 	if (self.titleLabel) {
         self.titleLabel.text = self.title;
@@ -720,7 +720,7 @@ static SIAlertView *__si_alert_current_view;
         self.activityIndicator.frame = CGRectMake((self.containerView.bounds.size.width - size.width) * .5f, y, size.width, size.height);
         y += size.height;
     }
-    
+
     if (self.items.count > 0) {
         if (y > CONTENT_PADDING_TOP) {
             y += GAP;
@@ -786,16 +786,7 @@ static SIAlertView *__si_alert_current_view;
 - (CGFloat)heightForTitleLabel
 {
     if (self.titleLabel) {
-        CGSize size = [self.title sizeWithFont:self.titleLabel.font
-                                   minFontSize:
-#ifndef __IPHONE_6_0
-                       self.titleLabel.font.pointSize * self.titleLabel.minimumScaleFactor
-#else
-                       self.titleLabel.minimumFontSize
-#endif
-                                actualFontSize:nil
-                                      forWidth:CONTAINER_WIDTH - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT
-                                 lineBreakMode:self.titleLabel.lineBreakMode];
+        CGSize size = [self.title sizeWithFont:self.titleLabel.font constrainedToSize:CGSizeMake(CONTAINER_WIDTH - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT, 10000)];
         return size.height;
     }
     return 0;
@@ -858,6 +849,8 @@ static SIAlertView *__si_alert_current_view;
 			self.titleLabel.font = self.titleFont;
             self.titleLabel.textColor = self.titleColor;
             self.titleLabel.adjustsFontSizeToFitWidth = YES;
+            self.titleLabel.numberOfLines = 0;
+            self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
 #ifndef __IPHONE_6_0
             self.titleLabel.minimumScaleFactor = 0.75;
 #else
@@ -969,7 +962,7 @@ static SIAlertView *__si_alert_current_view;
 	[button setBackgroundImage:normalImage forState:UIControlStateNormal];
 	[button setBackgroundImage:highlightedImage forState:UIControlStateHighlighted];
 	[button addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
-    
+
     return button;
 }
 
