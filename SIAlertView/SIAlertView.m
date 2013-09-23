@@ -707,7 +707,15 @@ static SIAlertView *__si_alert_current_view;
         }
         self.messageLabel.text = self.message;
         CGFloat height = [self heightForMessageLabel];
-        self.messageLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT, height);
+
+        if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+        {
+            self.messageLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT, height);
+        }
+        else
+        {
+            self.messageLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT * .5, height);
+        }
         y += height;
     }
     if (self.activityIndicator && self.isActivityIndicatorVisible)
@@ -851,11 +859,8 @@ static SIAlertView *__si_alert_current_view;
             self.titleLabel.adjustsFontSizeToFitWidth = YES;
             self.titleLabel.numberOfLines = 0;
             self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-#ifndef __IPHONE_6_0
             self.titleLabel.minimumScaleFactor = 0.75;
-#else
-            self.titleLabel.minimumFontSize = self.titleLabel.font.pointSize * 0.75;
-#endif
+
 			[self.containerView addSubview:self.titleLabel];
 #if DEBUG_LAYOUT
             self.titleLabel.backgroundColor = [UIColor redColor];
@@ -872,11 +877,19 @@ static SIAlertView *__si_alert_current_view;
 - (void)updateMessageLabel
 {
     if (self.message && !self.isActivityIndicatorVisible) {
-        if (!self.messageLabel) {
+        if (!self.messageLabel)
+        {
             self.messageLabel = [[UITextView alloc] initWithFrame:self.bounds];
             self.messageLabel.textAlignment = NSTextAlignmentCenter;
-            self.messageLabel.contentInset = UIEdgeInsetsMake(-8,-8,-8,-8);
-            self.messageLabel.textAlignment = UITextAlignmentLeft;
+            if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1)
+            {
+                self.messageLabel.contentInset = UIEdgeInsetsMake(-8,-8,-8,-8);
+            }
+            else
+            {
+                self.messageLabel.contentInset = UIEdgeInsetsMake(-8,-5,-8,-5);
+            }
+            self.messageLabel.textAlignment = NSTextAlignmentLeft;
             self.messageLabel.backgroundColor = [UIColor clearColor];
             self.messageLabel.font = self.messageFont;
             self.messageLabel.textColor = self.messageColor;
