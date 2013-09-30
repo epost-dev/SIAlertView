@@ -170,6 +170,13 @@ static SIAlertView *__si_alert_current_view;
     [self.alertView setup];
 }
 
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return [[UIApplication sharedApplication] statusBarStyle];
+}
+
+
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     [self.alertView resetTransition];
