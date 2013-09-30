@@ -173,7 +173,7 @@ static SIAlertView *__si_alert_current_view;
 
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
-    return [[UIApplication sharedApplication] statusBarStyle];
+    return [[[UIApplication sharedApplication].delegate window].rootViewController preferredStatusBarStyle];
 }
 
 
