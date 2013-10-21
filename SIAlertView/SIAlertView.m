@@ -411,6 +411,27 @@ static SIAlertView *__si_alert_current_view;
     }];
 }
 
+
+- (NSString *)accessibilityLabel
+{
+    NSMutableArray *labelContent = [NSMutableArray array];
+    if (self.title)
+    {
+        [labelContent addObject:self.title];
+    }
+    if (self.message)
+    {
+        [labelContent addObject:self.message];
+    }
+
+    if ([labelContent count] > 0)
+    {
+        return [labelContent componentsJoinedByString:@". "];
+    }
+    return nil;
+}
+
+
 - (void)dismissAnimated:(BOOL)animated
 {
     [self dismissAnimated:animated cleanup:YES];
@@ -867,6 +888,7 @@ static SIAlertView *__si_alert_current_view;
             self.titleLabel.numberOfLines = 0;
             self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
             self.titleLabel.minimumScaleFactor = 0.75;
+            self.titleLabel.accessibilityTraits = UIAccessibilityTraitHeader;
 
 			[self.containerView addSubview:self.titleLabel];
 #if DEBUG_LAYOUT
@@ -901,6 +923,7 @@ static SIAlertView *__si_alert_current_view;
             self.messageLabel.font = self.messageFont;
             self.messageLabel.textColor = self.messageColor;
             self.messageLabel.editable = NO;
+            self.titleLabel.accessibilityTraits = UIAccessibilityTraitStaticText;
             [self.containerView addSubview:self.messageLabel];
 #if DEBUG_LAYOUT
             self.messageLabel.backgroundColor = [UIColor redColor];
