@@ -723,10 +723,19 @@ static SIAlertView *__si_alert_current_view;
     self.containerView.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:self.containerView.bounds cornerRadius:self.containerView.layer.cornerRadius].CGPath;
 
     CGFloat y = CONTENT_PADDING_TOP;
-	if (self.titleLabel) {
+	if (self.titleLabel)
+    {
         self.titleLabel.text = self.title;
-        CGFloat height = [self heightForTitleLabel];
-        self.titleLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT, height);
+        CGSize size = [self.title sizeWithFont:self.titleLabel.font constrainedToSize:CGSizeMake(CONTAINER_WIDTH - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT, 10000)];
+        CGFloat height = size.height;
+        if (self.activityIndicator)
+        {
+            self.titleLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, MIN(size.width, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT), height);
+        }
+        else
+        {
+            self.titleLabel.frame = CGRectMake(CONTENT_PADDING_LEFT, y, self.containerView.bounds.size.width - CONTENT_PADDING_LEFT - CONTENT_PADDING_RIGHT, height);
+        }
         y += height;
 	}
     if (self.messageLabel && !self.isActivityIndicatorVisible) {
@@ -748,13 +757,8 @@ static SIAlertView *__si_alert_current_view;
     }
     if (self.activityIndicator && self.isActivityIndicatorVisible)
     {
-        if (y > CONTENT_PADDING_TOP) {
-            y += GAP;
-        }
-
         CGSize size = self.activityIndicator.frame.size;
-        self.activityIndicator.frame = CGRectMake((self.containerView.bounds.size.width - size.width) * .5f, y, size.width, size.height);
-        y += size.height;
+        self.activityIndicator.frame = CGRectMake(CGRectGetMaxX(self.titleLabel.frame) + 8, (CGRectGetMaxY(self.titleLabel.frame) - CGRectGetMinY(self.titleLabel.frame)) * .5f, size.width, size.height);
     }
 
     if (self.items.count > 0) {
