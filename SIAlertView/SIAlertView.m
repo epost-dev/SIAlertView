@@ -27,8 +27,8 @@ NSString *const SIAlertViewDidDismissNotification = @"SIAlertViewDidDismissNotif
 #define BUTTON_HEIGHT 44
 #define CONTAINER_WIDTH 290
 
-const UIWindowLevel UIWindowLevelSIAlert = 1999.0;  // don't overlap system's alert
-const UIWindowLevel UIWindowLevelSIAlertBackground = 1998.0; // below the alert window
+const UIWindowLevel UIWindowLevelSIAlert = 1989.0;  // don't overlap system's alert
+const UIWindowLevel UIWindowLevelSIAlertBackground = 1988.0; // below the alert window
 
 @class SIAlertBackgroundWindow;
 
